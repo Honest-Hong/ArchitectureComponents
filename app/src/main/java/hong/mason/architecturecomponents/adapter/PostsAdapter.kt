@@ -10,19 +10,29 @@ import hong.mason.architecturecomponents.R
  * Created by kakao on 2017. 11. 21..
  */
 class PostsAdapter : RecyclerView.Adapter<PostViewHolder>() {
-    private val list : MutableList<Post> = ArrayList()
+
+    private var onPostClick : (Post) -> Unit = { }
+
+    private var list : List<Post> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): PostViewHolder =
             PostViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.viewholder_post, parent, false))
 
     override fun onBindViewHolder(holder: PostViewHolder?, position: Int) {
         holder?.bindView(list[position])
+        holder?.itemView?.setOnClickListener {
+            onPostClick.invoke(list[position])
+        }
     }
 
     override fun getItemCount(): Int = list.size
 
-    fun addAll(list: List<Post>) {
-        this.list.addAll(list)
+    fun setList(list: List<Post>) {
+        this.list = list
         notifyDataSetChanged()
+    }
+
+    fun setOnPostClick(listener : (Post) -> Unit) {
+        onPostClick = listener
     }
 }

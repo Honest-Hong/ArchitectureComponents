@@ -1,5 +1,6 @@
 package hong.mason.architecturecomponents.ui
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
@@ -11,46 +12,42 @@ import io.reactivex.schedulers.Schedulers
 /**
  * Created by kakao on 2017. 11. 21..
  */
-class PostsViewModel : ViewModel(), BaseViewModel {
+class PostListViewModel : ViewModel(), BaseViewModel {
+    enum class State {
+        LOADING, LOADED, ERROR
+    }
+
     private val posts : MutableLiveData<List<Post>> = MutableLiveData()
-    private val loading : MutableLiveData<Boolean> = MutableLiveData()
-    private val error : MutableLiveData<Boolean> = MutableLiveData()
-    private val showAddView : MutableLiveData<Boolean> = MutableLiveData()
+    private val state : MutableLiveData<State> = MutableLiveData()
+    private val clickedPost : MutableLiveData<Post> = MutableLiveData()
     private lateinit var provider : PostsProvider
 
-    fun getPosts() : MutableLiveData<List<Post>> = posts
-    fun isError() : MutableLiveData<Boolean> = error
-    fun isLoading() : MutableLiveData<Boolean> = loading
-    fun isShowAddView() : MutableLiveData<Boolean> = showAddView
+    fun getPosts() : LiveData<List<Post>> = posts
+    fun getState() : LiveData<State> = state
+    fun getClickedPost() : LiveData<Post> = clickedPost
 
     override fun onCreate() {
         provider = PostsProvider()
-        loading.value = true
+        state.value = State.LOADING
         provider.getPosts()
                 .subscribeOn(Schedulers.newThread())
                 .subscribe ({
-                    loading.value = false
+                    Log.d("PostListViewModel", "onCreate::$it")
+                    state.value = State.LOADED
                     posts.value = it
                 }, {
-                    loading.value = false
-                    error.value = true
+                    state.value = State.ERROR
                 })
     }
 
     override fun onDestroy() {
     }
 
-    fun onClickAddButton() {
-        Log.d("PostsViewModel", "onClickAddButton")
-        showAddView.value = true
-    }
-
-    fun onCancel() {
-        showAddView.value = false
-    }
-
     fun onSubmit(post: Post) {
         provider.addPost(post)
-        onCancel()
+    }
+
+    fun onClickPost(post: Post) {
+        clickedPost.value = post
     }
 }

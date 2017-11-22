@@ -14,27 +14,25 @@ class PostsProvider {
         return Observable.defer {
             Observable.create<List<Post>> { observer ->
                 database.collection(COLLECTION)
-                        .get()
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                val list: MutableList<Post> = ArrayList()
-                                it.result.documents.forEach {
-                                    val post = Post(
-                                            it.getLong("id"),
-                                            it.getString("writer"),
-                                            it.getString("title"),
-                                            it.getString("content"),
-                                            it.getLong("writeDate")
-                                    )
-                                    list.add(post)
-                                }
-                                observer.onNext(list)
-                            } else {
+                        .addSnapshotListener { snapshot, exception ->
+                            if(exception != null) {
+                                exception.printStackTrace()
                                 observer.onError(Exception("not successful"))
                             }
-                        }
-                        .addOnFailureListener {
-                            observer.onError(it)
+                            val list: MutableList<Post> = ArrayList()
+                            snapshot.documents.forEach {
+                                val post = Post(
+                                        it.getLong("id"),
+                                        it.getString("writer"),
+                                        it.getLong("date"),
+                                        it.getLong("writeDate"),
+                                        it.getString("title"),
+                                        it.getString("content"),
+                                        it.getLong("degree").toInt()
+                                )
+                                list.add(post)
+                            }
+                            observer.onNext(list)
                         }
             }
 

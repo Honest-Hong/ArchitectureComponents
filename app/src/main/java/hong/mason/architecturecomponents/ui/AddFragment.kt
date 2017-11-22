@@ -37,13 +37,19 @@ class AddFragment : Fragment() {
             eventListener?.onSubmit(Post(
                     -1,
                     editWriter.text.toString(),
+                    (System.currentTimeMillis() / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000),
+                    System.currentTimeMillis(),
                     editTitle.text.toString(),
                     editContent.text.toString(),
-                    System.currentTimeMillis()
+                    0
             ))
         }
         buttonCancel.setOnClickListener {
             eventListener?.onCancel()
         }
+    }
+
+    companion object {
+        fun newInstance() : AddFragment = AddFragment()
     }
 }
